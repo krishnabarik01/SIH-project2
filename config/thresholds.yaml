@@ -1,0 +1,72 @@
+# MONSOON-GUARD Meteorological & Agronomic Thresholds
+# Operational Definitions calibrated for Central Peninsular / Eastern Plateau Agro-climatic Zone
+
+operational_definitions:
+  rain_day:
+    min_daily_precip_mm: 2.5
+    description: "Standard IMD definition of a rainy day (daily precipitation >= 2.5 mm)."
+
+  heavy_rain:
+    moderate_mm: 35.5
+    heavy_mm: 64.5
+    very_heavy_mm: 115.6
+    extremely_heavy_mm: 204.4
+    description: "IMD classification standard: Heavy rain is >= 64.5 mm in 24 hours."
+
+  local_monsoon_onset:
+    earliest_eligible_date: "06-01"   # June 1
+    latest_eligible_date: "07-15"     # July 15
+    initial_burst_days: 3
+    initial_burst_accum_mm: 25.0      # Cumulative rainfall over 3 days >= 25 mm
+    min_rain_days_in_burst: 2         # At least 2 of 3 days must be rainy days (>= 2.5 mm)
+    sustained_verification_window_days: 10
+    max_consecutive_dry_days_in_window: 6  # If > 6 consecutive dry days, categorized as false onset
+    min_accum_post_window_mm: 30.0    # At least 30mm cumulative rain over the subsequent 10 days
+    description: >
+      Local agro-meteorological onset defined at Block/Panchayat scale.
+      Distinguished explicitly from IMD synoptic Kerala onset: Local onset requires
+      adequate soil moisture initiation (>= 25mm in 3d) followed by sustained rainfall
+      without an immediate crippling dry spell.
+
+  false_onset:
+    initial_burst_met: true
+    dry_spell_days_immediately_following: 7
+    description: >
+      An early rainfall episode that meets initial rainfall burst criteria but is followed
+      by >= 7 consecutive dry days within the 14-day window, causing premature germination
+      failure and seed loss if sown prematurely.
+
+  monsoon_break:
+    active_monsoon_period:
+      start: "06-25"
+      end: "09-15"
+    break_duration_threshold_days: 5  # >= 5 consecutive dry days during active monsoon
+    daily_precip_threshold_mm: 2.5
+    description: >
+      A period of 5 or more consecutive days with daily rainfall < 2.5 mm occurring
+      after verified local onset, leading to rapid root-zone depletion.
+
+probability_calibration:
+  bins:
+    - { name: "Low", min: 0.0, max: 0.35, alert_color: "emerald", severity: 1 }
+    - { name: "Moderate", min: 0.35, max: 0.65, alert_color: "amber", severity: 2 }
+    - { name: "High", min: 0.65, max: 0.85, alert_color: "orange", severity: 3 }
+    - { name: "Very High", min: 0.85, max: 1.0, alert_color: "red", severity: 4 }
+
+confidence_scoring:
+  factors:
+    - name: "model_spread_iqr"
+      description: "Inter-quantile spread across tree ensembles or ensemble members"
+      weight: 0.35
+    - name: "climatological_distance"
+      description: "Mahalanobis distance of current climate driver state (ENSO/IOD/MJO) from historical training envelope"
+      weight: 0.35
+    - name: "calibration_brier_skill"
+      description: "Historical BSS of the model for current calendar week and lead time"
+      weight: 0.30
+  levels:
+    high: { min_score: 0.75, label: "High Confidence" }
+    moderate: { min_score: 0.45, label: "Moderate Confidence" }
+    low: { min_score: 0.0, label: "Low Confidence" }
+
+disclaimer: "All agricultural thresholds are placeholder baselines to be reviewed by agronomy experts / Krishi Vigyan Kendra (KVK) scientists before statutory release."

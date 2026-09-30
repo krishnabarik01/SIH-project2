@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: monsoon_guard_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATA_MODE=synthetic
+      - PORT=8000
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: monsoon_guard_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend

@@ -1,0 +1,100 @@
+# MONSOON-GUARD Data Sources Configuration
+# MoES / NCMRWF Hyperlocal Monsoon Prediction
+
+environment:
+  data_mode: "synthetic"  # 'real' | 'synthetic'
+  synthetic_random_seed: 42
+  cache_dir: "data/raw"
+  processed_dir: "data/processed"
+  training_dir: "data/training"
+  geojson_dir: "data/geojson"
+
+pilot_region:
+  state: "Chhattisgarh"
+  state_code: "CG"
+  secondary_state: "Madhya Pradesh"
+  districts:
+    - name: "Raipur"
+      district_id: "CG_RAIPUR"
+      center: [21.2514, 81.6296]
+      blocks:
+        - { id: "CG_RAI_01", name: "Dharsiwa", lat: 21.38, lon: 81.65, elevation_m: 298, dist_coast_km: 430 }
+        - { id: "CG_RAI_02", name: "Arang", lat: 21.19, lon: 81.96, elevation_m: 282, dist_coast_km: 405 }
+        - { id: "CG_RAI_03", name: "Abhanpur", lat: 21.05, lon: 81.74, elevation_m: 290, dist_coast_km: 415 }
+        - { id: "CG_RAI_04", name: "Tilda", lat: 21.56, lon: 81.78, elevation_m: 305, dist_coast_km: 435 }
+    - name: "Durg"
+      district_id: "CG_DURG"
+      center: [21.1904, 81.2849]
+      blocks:
+        - { id: "CG_DUR_01", name: "Durg", lat: 21.18, lon: 81.28, elevation_m: 300, dist_coast_km: 460 }
+        - { id: "CG_DUR_02", name: "Patan", lat: 21.03, lon: 81.53, elevation_m: 288, dist_coast_km: 435 }
+        - { id: "CG_DUR_03", name: "Dhamdha", lat: 21.44, lon: 81.31, elevation_m: 308, dist_coast_km: 470 }
+    - name: "Bilaspur"
+      district_id: "CG_BILASPUR"
+      center: [22.0797, 82.1409]
+      blocks:
+        - { id: "CG_BIL_01", name: "Bilha", lat: 21.95, lon: 82.16, elevation_m: 264, dist_coast_km: 440 }
+        - { id: "CG_BIL_02", name: "Kota", lat: 22.29, lon: 82.02, elevation_m: 330, dist_coast_km: 470 }
+        - { id: "CG_BIL_03", name: "Masturi", lat: 21.98, lon: 82.28, elevation_m: 255, dist_coast_km: 425 }
+        - { id: "CG_BIL_04", name: "Takhatpur", lat: 22.15, lon: 81.87, elevation_m: 280, dist_coast_km: 465 }
+    - name: "Bastar"
+      district_id: "CG_BASTAR"
+      center: [19.0736, 82.0255]
+      blocks:
+        - { id: "CG_BAS_01", name: "Jagdalpur", lat: 19.07, lon: 82.03, elevation_m: 552, dist_coast_km: 220 }
+        - { id: "CG_BAS_02", name: "Bastanar", lat: 18.91, lon: 81.75, elevation_m: 610, dist_coast_km: 235 }
+        - { id: "CG_BAS_03", name: "Tokapal", lat: 18.96, lon: 81.92, elevation_m: 575, dist_coast_km: 225 }
+
+temporal_splits:
+  train:
+    start: "2010-01-01"
+    end: "2018-12-31"
+  val:
+    start: "2019-01-01"
+    end: "2021-12-31"
+  test:
+    start: "2022-01-01"
+    end: "2024-12-31"
+
+horizons_days: [7, 14, 21, 30]
+
+data_sources:
+  era5:
+    provider: "ECMWF / Copernicus CDS"
+    dataset: "reanalysis-era5-single-levels"
+    variables:
+      - { name: "t2m", desc: "2m air temperature", unit: "K" }
+      - { name: "d2m", desc: "2m dewpoint temperature", unit: "K" }
+      - { name: "sp", desc: "Surface pressure", unit: "Pa" }
+      - { name: "msl", desc: "Mean sea level pressure", unit: "Pa" }
+      - { name: "u10", desc: "10m zonal wind component", unit: "m/s" }
+      - { name: "v10", desc: "10m meridional wind component", unit: "m/s" }
+      - { name: "sst", desc: "Sea surface temperature (Bay of Bengal / Arabian Sea)", unit: "K" }
+      - { name: "tp", desc: "Total precipitation", unit: "m" }
+    spatial_res_deg: 0.25
+    time_frequency: "daily_mean"
+
+  imerg:
+    provider: "NASA GES DISC"
+    dataset: "GPM_3IMERGDF"
+    version: "V07B"
+    variable: "precipitationCal"
+    spatial_res_deg: 0.1
+    time_frequency: "daily_accumulated"
+    unit: "mm/day"
+
+  climate_indices:
+    enso:
+      name: "Oceanic Nino Index (ONI) / Nino3.4 SST anomaly"
+      source: "NOAA CPC"
+      url: "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+      update_frequency: "monthly_interpolated_daily"
+    iod:
+      name: "Dipole Mode Index (DMI)"
+      source: "NOAA PSL / BoM"
+      update_frequency: "weekly_interpolated_daily"
+    mjo:
+      name: "Madden-Julian Oscillation Wheeler-Hendon RMM Indices"
+      source: "BoM Australia"
+      variables: ["RMM1", "RMM2", "phase", "amplitude"]
+      update_frequency: "daily"

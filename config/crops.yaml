@@ -1,0 +1,157 @@
+# MONSOON-GUARD Crop Agronomic Database
+# Calibrated for Kharif season crops in Central India (Chhattisgarh / MP)
+# Note: Thresholds are initial baselines - to be reviewed by agronomy experts / KVK.
+
+crops:
+  paddy:
+    common_name: "Paddy / Rice"
+    hindi_name: "धान (Paddy)"
+    type: "cereal"
+    water_requirement_mm: 1100
+    sowing_window:
+      earliest: "06-15"
+      optimal_start: "06-20"
+      optimal_end: "07-10"
+      latest: "07-25"
+    critical_stages:
+      nursery:
+        days_after_sowing: [0, 25]
+        dry_spell_tolerance_days: 4
+        moisture_sensitivity: "very_high"
+      transplanting:
+        days_after_sowing: [25, 35]
+        standing_water_needed_cm: 3.0
+        dry_spell_tolerance_days: 3
+        moisture_sensitivity: "critical"
+      tillering:
+        days_after_sowing: [35, 60]
+        dry_spell_tolerance_days: 6
+        moisture_sensitivity: "high"
+      panicle_initiation:
+        days_after_sowing: [60, 85]
+        dry_spell_tolerance_days: 5
+        moisture_sensitivity: "critical"
+      maturity:
+        days_after_sowing: [85, 120]
+        dry_spell_tolerance_days: 12
+        moisture_sensitivity: "low"
+    irrigation_contingency:
+      rainfed:
+        delay_sowing_if_break_prob_gt: 0.55
+        recommend_direct_seeded_rice: true
+        seed_treatment_required: true
+      irrigated:
+        allow_nursery_with_canal_borewell: true
+        water_conservation_technique: "AWD (Alternate Wetting and Drying)"
+
+  soybean:
+    common_name: "Soybean"
+    hindi_name: "सोयाबीन (Soybean)"
+    type: "oilseed"
+    water_requirement_mm: 500
+    sowing_window:
+      earliest: "06-15"
+      optimal_start: "06-22"
+      optimal_end: "07-07"
+      latest: "07-15"
+    critical_stages:
+      germination:
+        days_after_sowing: [0, 10]
+        dry_spell_tolerance_days: 5
+        heavy_rain_tolerance_days: 1 # Highly vulnerable to waterlogging
+        moisture_sensitivity: "critical"
+      vegetative:
+        days_after_sowing: [10, 35]
+        dry_spell_tolerance_days: 10
+        moisture_sensitivity: "moderate"
+      flowering:
+        days_after_sowing: [35, 55]
+        dry_spell_tolerance_days: 6
+        moisture_sensitivity: "critical"
+      pod_filling:
+        days_after_sowing: [55, 80]
+        dry_spell_tolerance_days: 7
+        moisture_sensitivity: "high"
+    irrigation_contingency:
+      rainfed:
+        delay_sowing_if_break_prob_gt: 0.50
+        ridge_and_furrow_sowing: true
+      irrigated:
+        broad_bed_furrow_method: true
+
+  maize:
+    common_name: "Maize / Corn"
+    hindi_name: "मक्का (Maize)"
+    type: "cereal"
+    water_requirement_mm: 550
+    sowing_window:
+      earliest: "06-15"
+      optimal_start: "06-20"
+      optimal_end: "07-10"
+      latest: "07-20"
+    critical_stages:
+      knee_high:
+        days_after_sowing: [20, 35]
+        dry_spell_tolerance_days: 8
+        moisture_sensitivity: "moderate"
+      tasseling_silking:
+        days_after_sowing: [45, 65]
+        dry_spell_tolerance_days: 5
+        moisture_sensitivity: "critical"
+      grain_filling:
+        days_after_sowing: [65, 85]
+        dry_spell_tolerance_days: 7
+        moisture_sensitivity: "high"
+    irrigation_contingency:
+      rainfed:
+        delay_sowing_if_break_prob_gt: 0.60
+      irrigated:
+        furrow_irrigation: true
+
+  pigeonpea:
+    common_name: "Pigeonpea / Arhar / Tur"
+    hindi_name: "अरहर / तुअर (Arhar)"
+    type: "pulse"
+    water_requirement_mm: 600
+    sowing_window:
+      earliest: "06-15"
+      optimal_start: "06-20"
+      optimal_end: "07-15"
+      latest: "07-30"
+    critical_stages:
+      seedling:
+        days_after_sowing: [0, 20]
+        dry_spell_tolerance_days: 10
+        moisture_sensitivity: "moderate"
+      pod_formation:
+        days_after_sowing: [90, 130]
+        dry_spell_tolerance_days: 12
+        moisture_sensitivity: "high"
+    irrigation_contingency:
+      rainfed:
+        delay_sowing_if_break_prob_gt: 0.65
+        intercropping_with_soybean: true
+      irrigated:
+        protective_irrigation_at_flowering: true
+
+advisory_rules:
+  - id: "RULE_PRE_ONSET_FALSE_ALARM"
+    condition: "onset_prob < 0.40 and break_prob > 0.55"
+    action_en: "Delay sowing operations despite recent showers. High probability of prolonged dry spell."
+    action_hi: "शुरुआती बारिश के बावजूद अभी बुवाई स्थगित करें। आने वाले 14 दिनों में सूखे का उच्च जोखिम है।"
+    severity: "HIGH"
+  - id: "RULE_ONSET_CONFIRMED_LOW_BREAK"
+    condition: "onset_prob >= 0.70 and break_prob < 0.35"
+    action_en: "Favorable conditions for main-field land preparation and sowing. Soil moisture sustained."
+    action_hi: "बुवाई और खेत की तैयारी के लिए अनुकूल परिस्थितियां। मिट्टी में नमी का स्तर स्थिर रहेगा।"
+    severity: "LOW"
+  - id: "RULE_IMMINENT_BREAK_ACTIVE_CROP"
+    condition: "break_prob >= 0.65 and crop_stage in ['flowering', 'transplanting', 'tasseling_silking']"
+    action_en: "Critical moisture stress imminent. Prepare life-saving micro-irrigation or in-situ moisture mulch."
+    action_hi: "फसल के नाजुक चरण में सूखे का खतरा। जीवनरक्षक सिंचाई या मल्चिंग की व्यवस्था तुरंत करें।"
+    severity: "VERY_HIGH"
+  - id: "RULE_HEAVY_RAIN_WATERLOGGING"
+    condition: "heavy_rain_prob >= 0.60"
+    action_en: "Open field drainage channels immediately to prevent waterlogging, especially in pulse/oilseed fields."
+    action_hi: "खेतों में जल निकासी की नालियां तुरंत खोलें ताकि दलहन/तिलहन फसलों में जलभराव न हो।"
+    severity: "HIGH"
